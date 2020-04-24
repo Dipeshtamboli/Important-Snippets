@@ -7,9 +7,35 @@ import pdb
 import torch.utils.data as data
 from PIL import Image
 from torchvision import transforms
+from torchvision.datasets import DatasetFolder
 import os
 import os.path
 from torch.utils.tensorboard import SummaryWriter
+
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
+
+class MyCustomImageFolder(DatasetFolder):
+    """
+    Inherit from `DatasetFolder` just like `ImageFolder`
+    """
+    def __init__(self, root, transform=None, target_transform=None,
+                 loader=default_loader, is_valid_file=None):
+        assert transform is not None, '`MyCustomImageFolder` dataset always expects a transform'
+        # don't pass this transform to `DatasetFolder`
+        super(MyCustomImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+                                          transform=None,
+                                          target_transform=target_transform,
+                                          is_valid_file=is_valid_file)
+        self.imgs = self.samples
+        # steal the transform in this class
+        self.input_transform = transform 
+    
+    def __getitem__(self, index):
+        # get the non transformed input using superclass 
+        sample, target = super(MyCustomImageFolder, self).__getitem__(self, index)
+        # return with the transformed sample
+        return (self.input_transform(sample), sample, target)
+
 class StandardTransform(object):
     def __init__(self, transform=None, target_transform=None):
         self.transform = transform
@@ -319,13 +345,13 @@ normalize = transforms.Normalize(
 
 
 test_normalize_simple = ImageFolder(root="../test")
-# , transform=transforms.Compose([
-#                 transforms.Resize(224),
-#                 transforms.CenterCrop(224),
-#                 transforms.ToTensor(),
-#                 normalize
-#                 # normalize_tf_mdk
-#             ])
+ , transform=transforms.Compose([
+                 transforms.Resize(224),
+                 transforms.CenterCrop(224),
+                 transforms.ToTensor(),
+                 normalize
+                 # normalize_tf_mdk
+             ])
 
 # exit()
 for i in test_normalize_simple:
