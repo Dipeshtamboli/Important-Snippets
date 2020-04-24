@@ -9,6 +9,40 @@ import os
 import os.path
 from torch.utils.tensorboard import SummaryWriter
 
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
+def default_loader(path):
+    from torchvision import get_image_backend
+    if get_image_backend() == 'accimage':
+        return accimage_loader(path)
+    else:
+        return pil_loader(path)
+class MyCustomImageFolder(DatasetFolder):
+    """
+    Inherit from `DatasetFolder` just like `ImageFolder`
+    """
+    def __init__(self, root, transform=None, target_transform=None,
+                 loader=default_loader, is_valid_file=None):
+        assert transform is not None, '`MyCustomImageFolder` dataset always expects a transform'
+        # don't pass this transform to `DatasetFolder`
+        super(MyCustomImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
+                                          transform=transforms.Compose([
+                                          # transforms.ToPILImage(),
+                                          transforms.Resize(224),
+                                          transforms.CenterCrop(224),
+                                          transforms.ToTensor()
+                                          ]),
+                                          target_transform=target_transform,
+                                          is_valid_file=is_valid_file)
+        self.imgs = self.samples
+        # steal the transform in this class
+        self.input_transform = transform 
+    
+    def __getitem__(self, index):
+        # get the non transformed input using superclass 
+        # sample, target = super(MyCustomImageFolder, self).__getitem__(self, index)
+        sample, target = super(MyCustomImageFolder, self).__getitem__(index)
+        # return with the transformed sample
+        return (self.input_transform(sample), sample, target)
 
 class StandardTransform(object):
     def __init__(self, transform=None, target_transform=None):
@@ -217,12 +251,15 @@ class DatasetFolder(VisionDataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        #####################################################################
-        # Do all the basic transformation on not-normalized image here
+        # print(sample.shape)
         self.Resize = transforms.transforms.Resize(224)
         sample_without_transform = self.Resize(sample_without_transform)
+        # print((sample_without_transform).shape)
         sample_without_transform = F.to_tensor(sample_without_transform)
-        ######################################################################
+        # print((sample_without_transform).shape)
+        # print(sample_without_transform)
+        # return sample, target   
+
         return sample, sample_without_transform, target
 
 
@@ -296,6 +333,7 @@ class ImageFolder(DatasetFolder):
 
 
 
+writer = SummaryWriter("img")
 
 class UnNormalize(object):
     def __init__(self, mean, std):
@@ -314,36 +352,45 @@ class UnNormalize(object):
             # The normalize code -> t.sub_(m).div_(s)
         return tensor
 
+normalize = transforms.Normalize(
+    mean=[0.485, 0.456, 0.406],
+    std=[0.229, 0.224, 0.225])
 
 
-if __name__ == '__main__':
+# test_normalize_simple = MyCustomImageFolder(root="../test",
+test_normalize_simple = ImageFolder(root="../test",
+   transform=transforms.Compose([
+                 transforms.Resize(224),
+                 transforms.CenterCrop(224),
+                 transforms.ToTensor(),
+                 normalize
+                 # normalize_tf_mdk
+             ]))
 
-    writer = SummaryWriter("img")
+# print(test_normalize_simple)
+# exit()
+# for i in test_normalize_simple:
+#     print(len(i))
 
-    normalize = transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225])
-
-    test_normalize_simple = ImageFolder(root="../test",
-       transform=transforms.Compose([
-                     transforms.Resize(224),
-                     transforms.CenterCrop(224),
-                     transforms.ToTensor(),
-                     normalize
-                 ]))
-
-
-    normalize_simple_data_loader  = data.DataLoader(test_normalize_simple, batch_size=1, shuffle=True, num_workers=1) 
-
-    for x , (transformed_img, input_img, target) in enumerate(normalize_simple_data_loader):
-        print(transformed_img.shape)
-        print(input_img.shape)
-        print(target)
-        
-        writer.add_image('img_norm', transformed_img[0,:,:,:], 0)
-        un = UnNormalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-        out = un(transformed_img)
-        writer.add_image('img_inv_norm', out[0,:,:,:], 0)
-        writer.add_image('original', input_img[0,:,:,:], 0)
+normalize_simple_data_loader  = data.DataLoader(test_normalize_simple, batch_size=1, shuffle=True, num_workers=1) 
+print(normalize_simple_data_loader)
+for x , (transformed_img, input_img, target) in enumerate(normalize_simple_data_loader):
+# for step, x, y in enumerate(normalize_simple_data_loader):
+    # print("a" , a.shape)
+    print(transformed_img.shape)
+    print(input_img.shape)
+    print(target)
     
-    writer.close()
+    writer.add_image('img_norm', transformed_img[0,:,:,:], 0)
+    un = UnNormalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
+    out = un(transformed_img)
+    writer.add_image('img_inv_norm', out[0,:,:,:], 0)
+    writer.add_image('original', input_img[0,:,:,:], 0)
+    # print(y)
+    # img = i[0]
+    # pdb.set_trace()
+    # break
+
+
+
+writer.close()
