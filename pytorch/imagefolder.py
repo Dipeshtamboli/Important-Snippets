@@ -12,6 +12,8 @@ import os
 import os.path
 from torch.utils.tensorboard import SummaryWriter
 
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif', '.tiff', '.webp')
+
 class MyCustomImageFolder(DatasetFolder):
     """
     Inherit from `DatasetFolder` just like `ImageFolder`
