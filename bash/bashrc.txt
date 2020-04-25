@@ -138,7 +138,3 @@ alias stop_vpn='sudo systemctl stop openvpn@iitbvpn.service'
 alias net_check='sudo subl /etc/resolv.conf'
 hobby
 tls
-export SB_token='xoxb-907432689634-920597166448-GaQiRWP8TLplo1Hx9FDjTD4w'
-export SA_token='xoxp-907432689634-920219256208-920199305492-ad81aa10a376158b5a27c3be2f107276'
-export TWILIO_ACCOUNT_SID='ACd0151764562292c9851a2eec995fe7ff'
-export TWILIO_AUTH_TOKEN='1a5f34c6afec095849c43e2ee4b2ea2b'
