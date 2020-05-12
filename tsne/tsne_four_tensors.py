@@ -46,8 +46,8 @@ dataset_label[mask_blur_feat.shape[0]+ mask_noblur_feat.shape[0]+nomask_blur_fea
 start_time = time.time()
 
 tsne = TSNE(n_jobs=16)
-
 embeddings = tsne.fit_transform(all_features)
+
 vis_x = embeddings[:, 0]
 vis_y = embeddings[:, 1]
 sns.set(rc={'figure.figsize':(11.7,8.27)})
