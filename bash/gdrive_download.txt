@@ -14,3 +14,9 @@ https://drive.google.com/file/d/0BxJeH3p7Ln48djNVVVJtUXh6bXc/edit?usp=sharing
 0BxJeH3p7Ln48djNVVVJtUXh6bXc
 
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=0BxJeH3p7Ln48djNVVVJtUXh6bXc' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=0BxJeH3p7Ln48djNVVVJtUXh6bXc" -O cuhk03 && rm -rf /tmp/cookies.txt
+
+# Install gdown from pypi and use it directly on the terminal
+Sharable link: https://drive.google.com/file/d/1EGv44pOMWn9H2DCzYFgbQmktT75bWAoJ/view?usp=sharing
+file id:1EGv44pOMWn9H2DCzYFgbQmktT75bWAoJ
+
+>> gdown --id 1EGv44pOMWn9H2DCzYFgbQmktT75bWAoJ
